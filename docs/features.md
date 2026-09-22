@@ -42,7 +42,7 @@ Requires a completion endpoint: set `VERA_COMPLETION_BASE_URL` and `VERA_COMPLET
 ### Advanced Retrieval & Context Structuring
 
 - **Maximal Marginal Relevance (MMR) Diversification (`ranking/mmr.rs`)**:
-  Balances semantic similarity to the query against pairwise candidate redundancy. Ensures the retrieved candidate pool covers distinct implementation locations rather than clustering on near-identical definitions or repetitive helper variants.
+  Balances semantic similarity to the query against pairwise candidate redundancy. Promotes diverse coverage across relevant implementation locations, depending on candidate similarities and the configured lambda trade-off, rather than clustering on near-identical definitions or repetitive helper variants.
 - **Multi-Hop Dependency Traversal (`multi_hop.rs`)**:
   Graph traversal engine over code symbol relationships (callers, callees, definitions). Features cycle-safe BFS/DFS depth-bounded traversals, Tarjan's linear-time $O(V + E)$ Strongly Connected Components (SCC) algorithm for cycle detection, Kahn's algorithm for topological sorting of acyclic call chains, and transitive closure reachability analysis.
 - **Hierarchical AST Auto-Merging & Small-to-Big Context Enrichment (`context_enrichment.rs`)**:

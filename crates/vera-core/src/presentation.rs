@@ -103,12 +103,16 @@ pub fn pack_results_within_budget(
 
         let chunk_cost = content.len() + r.file_path.len() + 32;
 
-        if let Some(limit) = options.max_characters
-            && !packed.is_empty()
-            && current_chars + chunk_cost > limit
-        {
-            // Character budget reached; stop packing further lower-ranked candidates
-            break;
+        if let Some(limit) = options.max_characters {
+            if packed.is_empty() {
+                // If even the first item exceeds budget, do not include it
+                if chunk_cost > limit {
+                    break;
+                }
+            } else if current_chars + chunk_cost > limit {
+                // Character budget reached; stop packing further lower-ranked candidates
+                break;
+            }
         }
 
         current_chars += chunk_cost;
