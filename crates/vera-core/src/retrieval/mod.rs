@@ -9,9 +9,11 @@
 //! - Graceful degradation when services are unavailable
 
 pub mod bm25;
+pub mod context_enrichment;
 pub(crate) mod exact_matches;
 pub(crate) mod graph_augmentation;
 pub mod hybrid;
+pub mod multi_hop;
 pub mod query_classifier;
 pub mod ranking;
 pub mod references;
@@ -30,7 +32,12 @@ pub use reranker::{
 };
 
 pub mod dynamic_reranker;
+pub use context_enrichment::{
+    EnrichedSearchResult, auto_merge_hierarchical_results, enrich_search_results,
+    infer_parent_scope,
+};
 pub use dynamic_reranker::{DynamicReranker, create_dynamic_reranker};
+pub use multi_hop::{SymbolEdge, SymbolGraph, TraversalDirection};
 
 pub mod completion_client;
 pub(crate) mod file_scan;

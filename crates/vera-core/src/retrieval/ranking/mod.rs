@@ -15,12 +15,14 @@ pub(crate) enum RankingStage {
     PostRerank,
 }
 
+pub(crate) mod mmr;
 pub(crate) mod query;
 pub(crate) mod score;
 
 #[cfg(test)]
 mod tests;
 
+pub use mmr::{MmrCandidate, cosine_similarity, mmr_diversify};
 use query::*;
 use score::*;
 

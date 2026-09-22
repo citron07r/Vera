@@ -64,9 +64,125 @@ pub fn truncate_to_budget(content: &str, allowed: usize) -> Cow<'_, str> {
     Cow::Owned(truncated)
 }
 
+/// Options controlling context compression and token budgets for coding agents.
+///
+/// Literature Provenance:
+/// - Alcaraz: "Agentic GraphRAG", Ch. 6 (The Prompt Bloat Crisis).
+/// - Norman: "Agentic RAG Systems", Ch. 11 (RAG FinOps).
+/// - Documented in `rag-wiki/features/contextual-compression.md`.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct CompressionOptions {
+    /// Extract structural declaration signatures, stripping implementation bodies.
+    pub signatures_only: bool,
+    /// Maximum character budget allowed across all packed results combined.
+    pub max_characters: Option<usize>,
+}
+
+/// Apply contextual compression and budget packing across a list of search results.
+///
+/// If `signatures_only` is true, replaces result chunk contents with their tree-sitter
+/// extracted signatures.
+/// If `max_characters` is set, greedily packs highest-ranking results until the total
+/// character budget is exhausted.
+pub fn pack_results_within_budget(
+    results: &[SearchResult],
+    options: CompressionOptions,
+) -> Vec<SearchResult> {
+    if results.is_empty() {
+        return Vec::new();
+    }
+
+    let mut packed = Vec::with_capacity(results.len());
+    let mut current_chars = 0usize;
+
+    for r in results {
+        let content = if options.signatures_only {
+            crate::parsing::signatures::extract_signature_for_path(
+                &r.content,
+                r.language,
+                &r.file_path,
+            )
+        } else {
+            r.content.clone()
+        };
+
+        let chunk_cost = content.len() + r.file_path.len() + 32;
+
+        if let Some(limit) = options.max_characters
+            && !packed.is_empty()
+            && current_chars + chunk_cost > limit
+        {
+            // Character budget reached; stop packing further lower-ranked candidates
+            break;
+        }
+
+        current_chars += chunk_cost;
+        let mut r_compressed = r.clone();
+        r_compressed.content = content;
+        packed.push(r_compressed);
+    }
+
+    packed
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_pack_results_within_budget_signatures_and_limit() {
+        use crate::types::Language;
+
+        let r1 = SearchResult {
+            file_path: "src/calc.rs".to_string(),
+            line_start: 1,
+            line_end: 10,
+            content:
+                "pub fn calculate_sum(a: i32, b: i32) -> i32 {\n    let sum = a + b;\n    sum\n}"
+                    .to_string(),
+            language: Language::Rust,
+            score: 0.95,
+            symbol_name: Some("calculate_sum".to_string()),
+            symbol_type: None,
+            part_index: None,
+        };
+
+        let r2 = SearchResult {
+            file_path: "src/extra.rs".to_string(),
+            line_start: 11,
+            line_end: 20,
+            content: "pub fn extra_helper() {\n    println!(\"extra\");\n}".to_string(),
+            language: Language::Rust,
+            score: 0.85,
+            symbol_name: Some("extra_helper".to_string()),
+            symbol_type: None,
+            part_index: None,
+        };
+
+        // 1. Test signatures only
+        let compressed = pack_results_within_budget(
+            &[r1.clone()],
+            CompressionOptions {
+                signatures_only: true,
+                max_characters: None,
+            },
+        );
+        assert_eq!(compressed.len(), 1);
+        assert!(compressed[0].content.contains("pub fn calculate_sum"));
+        assert!(compressed[0].content.contains("{ ... }"));
+
+        // 2. Test budget limit truncation
+        let budgeted = pack_results_within_budget(
+            &[r1.clone(), r2.clone()],
+            CompressionOptions {
+                signatures_only: false,
+                max_characters: Some(120),
+            },
+        );
+        // r1 fits, but r1 + r2 exceeds 120 chars, so only r1 is packed
+        assert_eq!(budgeted.len(), 1);
+        assert_eq!(budgeted[0].file_path, "src/calc.rs");
+    }
 
     #[test]
     fn truncate_to_budget_short_passthrough() {
