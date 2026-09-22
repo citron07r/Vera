@@ -1,10 +1,4 @@
-//! Small-to-big context enrichment for RAG retrieval.
-//!
-//! Literature Provenance:
-//! - Mendelevitch: "Hands-On RAG for Production", Ch. 2 ("The Base RAG Stack" - Parent-Child Chunking).
-//! - Nolan: "RAG in Practice", Ch. 5 ("Chunking Strategies: How to Split Documents Without Losing Meaning").
-//! - Polzer: "RAG with Python Cookbook", Ch. 7, Recipe 7.5 ("Auto-Merging & Sentence Window Retrieval").
-//! - Documented in `rag-wiki/features/context-enrichment-and-hierarchical-indices.md`.
+//! Small-to-big context enrichment for search results.
 //!
 //! Enriches leaf-level search results with enclosing architectural context (class names,
 //! trait/struct declarations, parent scope paths, or module definitions) to eliminate
@@ -90,7 +84,6 @@ pub fn enrich_search_results(
 
 /// Auto-merge adjacent or co-scoped sibling methods into a unified enclosing context.
 ///
-/// Provenance: Polzer Ch. 7, Recipe 7.5 ("Auto-Merging Retriever").
 /// When multiple retrieved chunks share the exact same `(file_path, parent_scope)`,
 /// returning them separately fragments the agent's view. This function groups sibling
 /// chunks occurring in the same container.

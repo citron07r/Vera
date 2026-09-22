@@ -65,11 +65,6 @@ pub fn truncate_to_budget(content: &str, allowed: usize) -> Cow<'_, str> {
 }
 
 /// Options controlling context compression and token budgets for coding agents.
-///
-/// Literature Provenance:
-/// - Alcaraz: "Agentic GraphRAG", Ch. 6 (The Prompt Bloat Crisis).
-/// - Norman: "Agentic RAG Systems", Ch. 11 (RAG FinOps).
-/// - Documented in `rag-wiki/features/contextual-compression.md`.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct CompressionOptions {
     /// Extract structural declaration signatures, stripping implementation bodies.

@@ -1,10 +1,5 @@
 //! Multi-hop graph traversal and path analysis over code symbol dependencies.
 //!
-//! Literature Provenance:
-//! - Alcaraz: "Agentic GraphRAG", Ch. 2 ("From Strings to Things"), Ch. 4 ("Agentic Graph Memory Systems").
-//! - Huang: "Graph Engineering for Agentic AI Systems", Ch. 2 & Ch. 8.
-//! - Documented in `rag-wiki/topics/knowledge-graphs-and-graphrag.md`.
-//!
 //! Provides bounded, cycle-safe BFS/DFS graph traversals to extract:
 //! 1. Multi-hop caller and callee dependency chains.
 //! 2. Shortest dependency paths between symbols.
@@ -166,7 +161,6 @@ impl SymbolGraph {
 
     /// Compute strongly connected components (SCCs) using Tarjan's linear-time algorithm O(V + E).
     ///
-    /// Provenance: Ke Huang ("Graph Engineering for Agentic AI Systems", Ch. 10).
     /// Returns all components. Components with size > 1 (or size 1 with a self-loop) represent cycles.
     pub fn strongly_connected_components(&self) -> Vec<Vec<String>> {
         // Collect all unique node identifiers
@@ -271,9 +265,7 @@ impl SymbolGraph {
 
     /// Compute a topological sort of the graph nodes if acyclic.
     /// Returns `Some(Vec<String>)` in dependency execution order (sources before sinks),
-    /// or `None` if the graph contains cycles.
-    ///
-    /// Provenance: Huang Ch. 10 ("The Computer Science of Agent Graphs").
+    /// or `None` if the graph contains cycles (using Kahn's algorithm).
     pub fn topological_sort(&self) -> Option<Vec<String>> {
         if self.has_cycle() {
             return None;
@@ -324,8 +316,6 @@ impl SymbolGraph {
     }
 
     /// Compute the full transitive closure of reachable symbols from a given start symbol.
-    ///
-    /// Provenance: Alcaraz Ch. 2 & 5 ("Traversing Explicit Relationships").
     pub fn transitive_closure(&self, start_symbol: &str) -> HashSet<String> {
         let mut closure = HashSet::new();
         let mut queue = VecDeque::new();

@@ -1,9 +1,4 @@
-//! Maximal Marginal Relevance (MMR) candidate diversification for RAG retrieval.
-//!
-//! Literature Provenance:
-//! - Carbonell & Goldstein (1998): "The Use of MMR, Diversity-Based Reranking for Reordering Documents and Producing Summaries".
-//! - Polzer: "RAG with Python Cookbook", Ch. 7, Recipe 7.6.
-//! - Documented in `rag-wiki/features/dartboard-retrieval-and-mmr.md`.
+//! Maximal Marginal Relevance (MMR) candidate diversification for retrieval.
 //!
 //! MMR balances relevance to the query with diversity among selected candidates:
 //!   MMR(d) = argmax_{d in D \ R} [ lambda * rel(d) - (1 - lambda) * max_{r in R} sim(d, r) ]

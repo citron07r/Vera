@@ -40,6 +40,9 @@ Data flow: file → grammar lookup → tree-sitter parse (+ diagnostics) → nod
 Deep search (`--deep`): `rag_fusion.rs` runs a cheap BM25 pre-filter to collect symbol names and file paths, then passes these as context hints to the LLM (`completion_client.rs`) which decomposes the query into targeted sub-queries (default 2). Sub-queries reuse the active `SearchContext`, and results merge with weighted RRF (original query gets 2x weight). Falls back to iterative symbol-following when no completion endpoint is configured.
 
 Structural search:
+- `ranking/`: Heuristic ranking, score fusion, and MMR (`mmr.rs`) candidate diversification
+- `multi_hop.rs`: Directed symbol dependency graph traversal, Tarjan SCC cycle detection, Kahn topological sort, and reachability
+- `context_enrichment.rs`: Small-to-big context enrichment and hierarchical AST auto-merging
 - `references.rs`: exact caller lookups from the persisted call graph, returned as search-style snippets
 - `structural.rs`: agent-oriented structural intents for definitions, env reads, routes, SQL, and explicit implementation lookups
 

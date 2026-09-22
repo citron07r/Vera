@@ -39,6 +39,17 @@ Large candidate sets are automatically batched (default 20 per request, configur
 
 Requires a completion endpoint: set `VERA_COMPLETION_BASE_URL` and `VERA_COMPLETION_MODEL_ID` (any OpenAI-compatible chat endpoint works, including local llama.cpp). When no completion endpoint is configured, `--deep` falls back to iterative symbol-following: it extracts symbol names from top results and searches for those symbols automatically.
 
+### Advanced Retrieval & Context Structuring
+
+- **Maximal Marginal Relevance (MMR) Diversification (`ranking/mmr.rs`)**:
+  Balances semantic similarity to the query against pairwise candidate redundancy. Ensures the retrieved candidate pool covers distinct implementation locations rather than clustering on near-identical definitions or repetitive helper variants.
+- **Multi-Hop Dependency Traversal (`multi_hop.rs`)**:
+  Graph traversal engine over code symbol relationships (callers, callees, definitions). Features cycle-safe BFS/DFS depth-bounded traversals, Tarjan's linear-time $O(V + E)$ Strongly Connected Components (SCC) algorithm for cycle detection, Kahn's algorithm for topological sorting of acyclic call chains, and transitive closure reachability analysis.
+- **Hierarchical AST Auto-Merging & Small-to-Big Context Enrichment (`context_enrichment.rs`)**:
+  Enriches individual code snippets with their enclosing parent scope, struct/class declarations, and breadcrumbs. Automatically merges multiple retrieved sibling chunks sharing the same enclosing container into a unified context block, preventing fragmented snippet windows for agent prompts.
+- **Contextual Compression & Token Budget Packing (`presentation.rs`)**:
+  Packs retrieved results within character/token budgets, optionally stripping method bodies to structural AST signatures to maximize information density in LLM contexts.
+
 ### Compact Mode
 
 `vera search "query" --compact` strips function and class bodies from results, returning only signatures (name, parameters, return type). This fits more results into fewer tokens, making it useful for broad exploration before drilling into specific implementations. Works with `vera grep` too. Falls back to the first 3 lines for languages or chunks where body stripping isn't applicable.
